@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "install.packages(\"XML\")\n\nlibrary(dplyr)\nlibrary(zoo)\nlibrary(lubridate)\nlibrary(XML)\ntripdata <- read.csv(\"R/input/201805-capitalbikeshare-tripdata.csv\")\nView(tripdata)\ncolnames(tripdata)\ntripdata <- tripdata[!(is.na(tripdata$End.station) | tripdata$End.station==\"\"), ]\n\n# External data\nxmlfile <- xmlTreeParse('R/input/stations.xml',useInternalNodes = TRUE)\ntopxml <- xmlRoot(xmlfile)\ntopxml <- xmlSApply(topxml, function(x) xmlSApply(x, xmlValue))\nstation_data <- data.frame(t(topxml), row.names=NULL)\nstation_data$terminalName <- as.numeric(station_data$terminalName)\nstation_data$lat <- as.numeric(station_data$lat)\nstation_data$long <- as.numeric(station_data$long)\nstation_data$name <- as.character(station_data$name)\nView(station_data)\nwrite.csv(station_data,file = \"R/input/station_data.csv\")\n\ntemp <- tripdata\n# write.csv(tripdata,file = \"df1.csv\")\n# View(temp)\n# View(station_data)\n# View(tripdata)\n# glimpse(station_data)\n# temp <- cbind(\"ss_id\",\"ss_terminalName\",\"ss_lat\",\"ss_long\",\"ss_nbBikes\",\"ss_nbEmptyDocks\")\n# glimpse(temp)\n\n\ntemp$name <- temp$Start.station\ndim_desc(tripdata)\ndf <- merge(temp,station_data,by=\"name\",all.x = TRUE)\ndf$name <- df$End.station\ndf1 <- merge(df,station_data,by=\"name\",all.x = TRUE,suffixes =\"es\")\ndim_desc(df1)\nwrite.csv(df1,file = \"R/input/df1.csv\")\ncolnames(df1)\n\ncols <- c(\"Member.type\",\"Duration\",\"terminalNamees\",\"lates\",\"longes\",\"nbBikeses\",\n          \"nbEmptyDockses\",\"terminalNameNA\",\"latNA\",\"longNA\",\"nbBikesNA\",\"nbEmptyDocksNA\")\n\ndf.fl <- df1[,c(cols)]\ndim_desc(df.fl)\n\ninstall.packages('caTools')\nlibrary(caTools)\nsplit <- sample.split(df.fl$Member.type, SplitRatio = 0.75)\nsplit\n#get training and test data\ntrain <- subset(df.fl, split == TRUE)\ntest <- subset(df.fl, split == FALSE)\n\ntrain[is.na(train)] <- 0.00001\ndim_desc(train)\ndim_desc(test)\n\n\n#logistic regression model\nmodel <- glm (Member.type ~ ., data = train, family = binomial)\nsummary(model)\npredictions <- predict(model,test[,-1],type=\"response\")\n\n\nx = train[,-1]\ny= train[,1]\nsum(is.na(train))\nsum(is.na(y))\nx[is.na(x)] <- 0\n\n\n#Fitting the Naive Bayes model\nlibrary(e1071)\nnbmodel = train(x,y,'nb',trControl=trainControl(method='cv',number=2))\nnbmodel\npredict(nbmodel$finalModel,x[50,])\ntable(predict(nbmodel$finalModel,x[1:50,])$class,y[1:50])\n\n\n\n\n\n\n",
+    "created" : 1531127276142.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1105507986",
+    "id" : "95567CD7",
+    "lastKnownWriteTime" : 1531139275,
+    "last_content_update" : 1531139275144,
+    "path" : "~/Desktop/ikl/internal/2018/cabitrip/R/newdata.R",
+    "project_path" : "R/newdata.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

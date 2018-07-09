@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "install.packages(\"XML\")\n\nlibrary(dplyr)\nlibrary(zoo)\nlibrary(lubridate)\nlibrary(XML)\ntripdata <- read.csv(\"R/input/2010-Q4-cabi-trip-history-data_2010-Q4-cabi-trip-history-data.csv\")\n# str(tripdata)\ncolnames(tripdata)\ntripdata <- tripdata[!(is.na(tripdata$End.station) | tripdata$End.station==\"\"), ]\n\n\ntripdata$Start.station.number <- ifelse(grepl('[\\\\(\\\\)]', tripdata$Start.station),\n                                        gsub(\".*\\\\((.*)\\\\).*\", \"\\\\1\", tripdata$Start.station),\n                                        tripdata$Start.station.number)\n\ntripdata$End.station.number <- ifelse(grepl('[\\\\(\\\\)]',tripdata$End.station),\n                                      gsub(\".*\\\\(.*)\\\\).*\",\"\\\\1\",tripdata$End.station),\n                                      tripdata$End.station.number)\n\ntripdata$Start.station.number <- as.numeric(tripdata$Start.station.number)\ntripdata$End.station.number <- as.numeric(tripdata$End.station.number)\n\n\ntripdata$Start.Station.name <- ifelse(grepl('[\\\\(\\\\)]', tripdata$Start.station),\n                                  gsub(\"\\\\s*\\\\([^\\\\)]+\\\\)\",\"\", as.character(tripdata$Start.station)),\n                                  tripdata$Start.station.name)\n\ntripdata$End.station.name <- ifelse(grepl('[\\\\(\\\\)]', tripdata$End.station),\n                                      gsub(\"\\\\s*\\\\([^\\\\)]+\\\\)\",\"\", as.character(tripdata$End.station)),\n                                      tripdata$End.station.name)\n\n# Date conversion\ntripdata$Start.date.time <- as.POSIXct(tripdata$Start.date, format = \"%m/%d/%Y %H:%M\")\ntripdata$End.date.time <- as.POSIXct(tripdata$End.date, format = \"%m/%d/%Y %H:%M\")\ntripdata$duraton <- tripdata$End.date.time-tripdata$Start.date.time\n\nView(tripdata)\n\n\nxmlfile <- xmlTreeParse('http://feeds.capitalbikeshare.com/stations/stations.xml',useInternalNodes = TRUE)\nsaveXML(xmlfile,file = \"R/input/stations.xml\")\n\ntopxml <- xmlRoot(xmlfile)\ntopxml <- xmlSApply(topxml, function(x) xmlSApply(x, xmlValue))\nstation_data <- data.frame(t(topxml), row.names=NULL)\nstation_data$terminalName <- as.numeric(station_data$terminalName)\nstation_data$lat <- as.numeric(station_data$lat)\nstation_data$long <- as.numeric(station_data$long)\nstation_data$name <- as.character(station_data$name)\n\n# str(station_data)\nhead(station_data)\n# View(station_data)\nunique(station_data$name)\nunique(tripdata$Start.Station.name)\nunique(tripdata$End.station.name)\nView(tripdata)\n\n\n\n",
+    "created" : 1531119067971.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2841789920",
+    "id" : "3E150555",
+    "lastKnownWriteTime" : 1531127010,
+    "last_content_update" : 1531127271675,
+    "path" : "~/Desktop/ikl/internal/2018/cabitrip/R/readdata.R",
+    "project_path" : "R/readdata.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

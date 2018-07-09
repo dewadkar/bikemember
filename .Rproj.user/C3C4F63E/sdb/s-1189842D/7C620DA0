@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# Hello, world!\n#\n# This is an example function named 'hello'\n# which prints 'Hello, world!'.\n#\n# You can learn more about package authoring with RStudio at:\n#\n#   http://r-pkgs.had.co.nz/\n#\n# Some useful keyboard shortcuts for package authoring:\n#\n#   Build and Reload Package:  'Cmd + Shift + B'\n#   Check Package:             'Cmd + Shift + E'\n#   Test Package:              'Cmd + Shift + T'\n\nhello <- function() {\n  print(\"Hello, world!\")install.packages(\"XML\")\n}\n\n  library(dplyr)\n  library(zoo)\n  library(lubridate)\n  library(XML)\n  tripdata <- read.csv(\"R/input/201805-capitalbikeshare-tripdata.csv\")\n  View(tripdata)\n  colnames(tripdata)\n  tripdata <- tripdata[!(is.na(tripdata$End.station) | tripdata$End.station==\"\"), ]\n\n  # External data\n  xmlfile <- xmlTreeParse('R/input/stations.xml',useInternalNodes = TRUE)\n  topxml <- xmlRoot(xmlfile)\n  topxml <- xmlSApply(topxml, function(x) xmlSApply(x, xmlValue))\n  station_data <- data.frame(t(topxml), row.names=NULL)\n  station_data$terminalName <- as.numeric(station_data$terminalName)\n  station_data$lat <- as.numeric(station_data$lat)\n  station_data$long <- as.numeric(station_data$long)\n  station_data$name <- as.character(station_data$name)\n  View(station_data)\n  write.csv(station_data,file = \"R/input/station_data.csv\")\n\n  temp <- tripdata\n  # write.csv(tripdata,file = \"df1.csv\")\n  # View(temp)\n  # View(station_data)\n  # View(tripdata)\n  # glimpse(station_data)\n  # temp <- cbind(\"ss_id\",\"ss_terminalName\",\"ss_lat\",\"ss_long\",\"ss_nbBikes\",\"ss_nbEmptyDocks\")\n  # glimpse(temp)\n\n\n  temp$name <- temp$Start.station\n  dim_desc(tripdata)\n  df <- merge(temp,station_data,by=\"name\",all.x = TRUE)\n  df$name <- df$End.station\n  df1 <- merge(df,station_data,by=\"name\",all.x = TRUE,suffixes =\"es\")\n  dim_desc(df1)\n  write.csv(df1,file = \"R/input/df1.csv\")\n  colnames(df1)\n\n  cols <- c(\"Member.type\",\"Duration\",\"terminalNamees\",\"lates\",\"longes\",\"nbBikeses\",\n            \"nbEmptyDockses\",\"terminalNameNA\",\"latNA\",\"longNA\",\"nbBikesNA\",\"nbEmptyDocksNA\")\n\n  df.fl <- df1[,c(cols)]\n  dim_desc(df.fl)\n\n  install.packages('caTools')\n  library(caTools)\n  split <- sample.split(df.fl$Member.type, SplitRatio = 0.75)\n  split\n  #get training and test data\n  train <- subset(df.fl, split == TRUE)\n  test <- subset(df.fl, split == FALSE)\n\n  train[is.na(train)] <- 0.00001\n  dim_desc(train)\n  dim_desc(test)\n\n\n  #logistic regression model\n  model <- glm (Member.type ~ ., data = train, family = binomial)\n  summary(model)\n  predictions <- predict(model,test[,-1],type=\"response\")\n\n\n  x = train[,-1]\n  y= train[,1]\n  sum(is.na(train))\n  sum(is.na(y))\n  x[is.na(x)] <- 0\n\n\n  #Fitting the Naive Bayes model\n  library(e1071)\n  nbmodel = train(x,y,'nb',trControl=trainControl(method='cv',number=2))\n  nbmodel\n  predict(nbmodel$finalModel,x[50,])\n  table(predict(nbmodel$finalModel,x[1:50,])$class,y[1:50])\n\n",
+    "created" : 1531119015321.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4147809339",
+    "id" : "7C620DA0",
+    "lastKnownWriteTime" : 1531139335,
+    "last_content_update" : 1531139335943,
+    "path" : "~/Desktop/ikl/internal/2018/cabitrip/R/Main.R",
+    "project_path" : "R/Main.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
